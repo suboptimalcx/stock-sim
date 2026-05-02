@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 type MarketService interface {
@@ -30,6 +31,7 @@ type Handler struct {
 func NewHandler(svc MarketService) *chi.Mux {
 	h := &Handler{svc: svc}
 	r := chi.NewRouter()
+	r.Use(middleware.Logger)
 
 	r.Post("/wallets/{wallet_id}/stocks/{stock_name}", h.Trade)
 	r.Get("/wallets/{wallet_id}", h.GetWallet)

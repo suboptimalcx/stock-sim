@@ -97,7 +97,7 @@ func (h *Handler) GetWalletStock(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
-	fmt.Fprintf(w, "%d", qty)
+	fmt.Fprintf(w, "%d\n", qty)
 }
 
 func (h *Handler) GetStocks(w http.ResponseWriter, r *http.Request) {

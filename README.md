@@ -1,19 +1,41 @@
-# stock-sim
+# Stock-Sim
 
-A simple stock trading simulation API written in Go with PostgreSQL persistence and an Nginx load balancer.
+A highly available, simplified stock exchange service written in Go.
 
-## Endpoints
+## Prerequisites
 
-- `POST /wallets/{wallet_id}/stocks/{stock_name}`
-  - Request body: `{ "type": "buy" }` or `{ "type": "sell" }`
-  - Example: `POST /wallets/wallet123/stocks/ACME`
-- `POST /chaos`
-  - Terminates the app
+* Docker
+* Docker Compose
+* Docker daemon must be running
 
-## Run
+## Running the Application
 
-1. Start the stack:
+You can start the application with a single command.
+If no port is specified, the service runs on **port 8080** by default.
+
+---
+
+### Linux / macOS
 
 ```bash
-docker compose up --build
+# Make the script executable (only needed once)
+chmod +x start.sh
+
+# Run on default port (8080)
+./start.sh
+
+# Run on a custom port (e.g., 3000)
+./start.sh 3000
+```
+
+---
+
+### Windows
+
+```bat
+:: Run on default port (8080)
+start.bat
+
+:: Run on a custom port (e.g., 3000)
+start.bat 3000
 ```

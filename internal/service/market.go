@@ -6,7 +6,8 @@ import (
 )
 
 type Repository interface {
-	Trade(ctx context.Context, walletID, stockName, tradeType string) error
+	TradeBuy(ctx context.Context, walletID, stockName string) error
+	TradeSell(ctx context.Context, walletID, stockName string) error
 	GetWallet(ctx context.Context, walletID string) (model.Wallet, error)
 	GetWalletStock(ctx context.Context, walletID, stockName string) (int, error)
 	GetBankState(ctx context.Context) ([]model.Stock, error)
@@ -23,10 +24,14 @@ func NewMarketService(repo Repository) *MarketService {
 }
 
 func (s *MarketService) ExecuteTrade(ctx context.Context, walletID, stockName, tradeType string) error {
-	if tradeType != "buy" && tradeType != "sell" {
+	switch tradeType {
+	case "buy":
+		return s.repo.TradeBuy(ctx, walletID, stockName)
+	case "sell":
+		return s.repo.TradeSell(ctx, walletID, stockName)
+	default:
 		return model.ErrInvalidOperation
 	}
-	return s.repo.Trade(ctx, walletID, stockName, tradeType)
 }
 
 func (s *MarketService) GetWallet(ctx context.Context, walletID string) (model.Wallet, error) {

@@ -39,3 +39,12 @@ start.bat
 :: Run on a custom port (e.g., 3000)
 start.bat 3000
 ```
+
+
+## Tests
+
+### Unit Tests
+
+```bash
+go test ./internal/service ./internal/handler -v
+```

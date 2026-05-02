@@ -80,3 +80,98 @@ func (r *PostgresRepository) Trade(ctx context.Context, walletID, stockName, tra
 
 	return tx.Commit(ctx)
 }
+
+func (r *PostgresRepository) GetWallet(ctx context.Context, walletID string) (model.Wallet, error) {
+	wallet := model.Wallet{
+		ID:     walletID,
+		Stocks: make([]model.Stock, 0),
+	}
+
+	rows, err := r.db.Query(ctx, "SELECT stock_name, quantity FROM wallet_stocks WHERE wallet_id = $1", walletID)
+	if err != nil {
+		return wallet, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var s model.Stock
+		if err := rows.Scan(&s.Name, &s.Quantity); err != nil {
+			return wallet, err
+		}
+		wallet.Stocks = append(wallet.Stocks, s)
+	}
+
+	return wallet, rows.Err()
+}
+
+func (r *PostgresRepository) GetWalletStock(ctx context.Context, walletID, stockName string) (int, error) {
+	var qty int
+	err := r.db.QueryRow(ctx, "SELECT quantity FROM wallet_stocks WHERE wallet_id = $1 AND stock_name = $2", walletID, stockName).Scan(&qty)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return 0, model.ErrStockNotFound
+		}
+		return 0, err
+	}
+	return qty, nil
+}
+
+func (r *PostgresRepository) GetBankState(ctx context.Context) ([]model.Stock, error) {
+	stocks := make([]model.Stock, 0)
+	rows, err := r.db.Query(ctx, "SELECT name, quantity FROM stocks")
+	if err != nil {
+		return stocks, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var s model.Stock
+		if err := rows.Scan(&s.Name, &s.Quantity); err != nil {
+			return stocks, err
+		}
+		stocks = append(stocks, s)
+	}
+
+	return stocks, rows.Err()
+}
+
+func (r *PostgresRepository) SetBankState(ctx context.Context, stocks []model.Stock) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	for _, s := range stocks {
+		_, err = tx.Exec(ctx, `
+            INSERT INTO stocks (name, quantity) 
+            VALUES ($1, $2) 
+            ON CONFLICT (name) 
+            DO UPDATE SET quantity = EXCLUDED.quantity`,
+			s.Name, s.Quantity)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
+}
+
+func (r *PostgresRepository) GetLogs(ctx context.Context) ([]model.LogEntry, error) {
+	logs := make([]model.LogEntry, 0)
+	rows, err := r.db.Query(ctx, "SELECT type, wallet_id, stock_name FROM audit_logs ORDER BY created_at ASC LIMIT 10000")
+	if err != nil {
+		return logs, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var l model.LogEntry
+		if err := rows.Scan(&l.Type, &l.WalletID, &l.StockName); err != nil {
+			return logs, err
+		}
+		logs = append(logs, l)
+	}
+
+	return logs, rows.Err()
+}

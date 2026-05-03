@@ -48,3 +48,17 @@ start.bat 3000
 ```bash
 go test ./internal/service ./internal/handler -v
 ```
+
+---
+
+### Integration Tests
+
+Integration tests require a running database.
+
+1. Start the database container:
+
+```bash
+docker compose up db -d
+
+go test ./internal/repository -v
+```

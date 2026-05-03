@@ -52,7 +52,7 @@ The system is intentionally simplified:
 
 ## Architecture
 
-To fulfill the requirements specifically high availability, concurrency control, and cross-platform simplicity—the following architecture was chosen:
+To fulfill the requirements specifically high availability, concurrency control, and cross-platform simplicity, the following architecture was chosen:
 
 *   **Language & Routing (Go + Chi):** Go was chosen for its excellent concurrency model, high performance, and standard library robustness. The `chi` router is used because it is lightweight, idiomatic, and relies entirely on standard `http.Handler`, keeping the footprint minimal.
 *   **Database (PostgreSQL):** PostgreSQL was selected to ensure data integrity during concurrent `buy` and `sell` operations. (e.g., preventing race conditions where two simultaneous requests might successfully buy the last remaining stock).

@@ -5,6 +5,11 @@ import (
 	"stock-sim/internal/model"
 )
 
+const (
+	TradeBuy  = "buy"
+	TradeSell = "sell"
+)
+
 type Repository interface {
 	TradeBuy(ctx context.Context, walletID, stockName string) error
 	TradeSell(ctx context.Context, walletID, stockName string) error
@@ -25,9 +30,9 @@ func NewMarketService(repo Repository) *MarketService {
 
 func (s *MarketService) ExecuteTrade(ctx context.Context, walletID, stockName, tradeType string) error {
 	switch tradeType {
-	case "buy":
+	case TradeBuy:
 		return s.repo.TradeBuy(ctx, walletID, stockName)
-	case "sell":
+	case TradeSell:
 		return s.repo.TradeSell(ctx, walletID, stockName)
 	default:
 		return model.ErrInvalidOperation

@@ -154,22 +154,31 @@ func (r *PostgresRepository) GetBankState(ctx context.Context) ([]model.Stock, e
 }
 
 func (r *PostgresRepository) SetBankState(ctx context.Context, stocks []model.Stock) error {
+	if len(stocks) == 0 {
+		return nil
+	}
+
+	names := make([]string, len(stocks))
+	quantities := make([]int, len(stocks))
+	for i, s := range stocks {
+		names[i] = s.Name
+		quantities[i] = s.Quantity
+	}
+
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
 
-	for _, s := range stocks {
-		_, err = tx.Exec(ctx, `
-            INSERT INTO stocks (name, quantity) 
-            VALUES ($1, $2) 
-            ON CONFLICT (name) 
-            DO UPDATE SET quantity = EXCLUDED.quantity`,
-			s.Name, s.Quantity)
-		if err != nil {
-			return err
-		}
+	_, err = tx.Exec(ctx, `
+        INSERT INTO stocks (name, quantity)
+        SELECT unnest($1::text[]), unnest($2::int[])
+        ON CONFLICT (name)
+        DO UPDATE SET quantity = EXCLUDED.quantity`,
+		names, quantities)
+	if err != nil {
+		return err
 	}
 
 	return tx.Commit(ctx)

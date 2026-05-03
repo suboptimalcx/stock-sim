@@ -147,7 +147,7 @@ func (h *Handler) Chaos(w http.ResponseWriter, r *http.Request) {
 	})
 	go func() {
 		time.Sleep(100 * time.Millisecond)
-		log.Println("CHAOS!!!!!!!!!")
+		log.Println("Chaos endpoint hit - terminating instance")
 		os.Exit(1)
 	}()
 }
